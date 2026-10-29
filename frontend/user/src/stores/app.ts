@@ -4,6 +4,7 @@ import { configAPI } from '../api'
 import { applyCustomScripts } from '../utils/customScripts'
 import { getImageUrl } from '../utils/image'
 import { getLocalizedText } from '../utils/resellerSiteConfig'
+import { resolveBrandName } from '../utils/brand'
 import { detectLocale, setI18nLocale } from '../i18n'
 import { useHead } from '@unhead/vue'
 
@@ -17,7 +18,7 @@ export const useAppStore = defineStore('app', () => {
     const serverTimeOffset = ref(0)
     const siteIconHref = computed(() => {
         const siteIcon = String(config.value?.brand?.site_icon || '').trim()
-        return siteIcon ? getImageUrl(siteIcon) : '/dj.svg'
+        return siteIcon ? getImageUrl(siteIcon) : '/jd1688.svg'
     })
     const isResellerTenant = computed(() => {
         return String(config.value?.tenant?.mode || '').trim().toLowerCase() === 'reseller'
@@ -41,8 +42,7 @@ export const useAppStore = defineStore('app', () => {
             const lang = locale.value
             const localized = getLocalizedText(seo?.title, lang)
             if (localized) return String(localized).trim() || undefined
-            const siteName = String(config.value?.brand?.site_name || '').trim()
-            return siteName || undefined
+            return resolveBrandName(config.value?.brand?.site_name)
         },
         link: () => [{ key: 'favicon', rel: 'icon', href: siteIconHref.value }],
         meta: () => {
@@ -80,6 +80,12 @@ export const useAppStore = defineStore('app', () => {
             const requestTime = Date.now()
             const response = await configAPI.get()
             config.value = response.data.data
+            if (config.value) {
+                config.value.brand = {
+                    ...config.value.brand,
+                    site_name: resolveBrandName(config.value.brand?.site_name),
+                }
+            }
             // 计算服务器与客户端的时间偏移量
             if (config.value?.server_time) {
                 const responseTime = Date.now()

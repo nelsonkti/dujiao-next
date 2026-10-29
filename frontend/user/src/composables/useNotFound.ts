@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/app'
+import { resolveBrandName } from '../utils/brand'
 
 /**
  * 404 页共享逻辑（classic + vault 双模板共用）。
@@ -12,7 +13,7 @@ export function useNotFound() {
 
   const brandSiteName = computed(() => {
     const siteName = String(appStore.config?.brand?.site_name || '').trim()
-    return siteName !== '' ? siteName : 'Dujiao-Next'
+    return resolveBrandName(siteName)
   })
 
   const goBack = () => {

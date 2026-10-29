@@ -199,6 +199,7 @@ import { useAppStore } from '../../stores/app'
 import { useUserAuthStore } from '../../stores/userAuth'
 import { useTheme } from '../../utils/theme'
 import { getImageUrl } from '../../utils/image'
+import { DEFAULT_BRAND_LOGO, resolveBrandName } from '../../utils/brand'
 
 defineProps<{
   title: string
@@ -228,12 +229,12 @@ const currentLocaleLabel = computed(() => {
 
 const brandSiteName = computed(() => {
   const text = String(appStore.config?.brand?.site_name || '').trim()
-  return text !== '' ? text : 'Dujiao-Next'
+  return resolveBrandName(text)
 })
 
 const brandLogo = computed(() => {
   const raw = String(appStore.config?.brand?.site_logo || '').trim()
-  return raw ? getImageUrl(raw) : ''
+  return raw ? getImageUrl(raw) : DEFAULT_BRAND_LOGO
 })
 
 const isActive = (path: string) => {

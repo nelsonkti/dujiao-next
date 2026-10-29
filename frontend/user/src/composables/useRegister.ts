@@ -8,6 +8,7 @@ import type { CaptchaPayload } from '../api'
 import ImageCaptcha from '../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../components/captcha/TurnstileCaptcha.vue'
 import { useFormValidation, getPasswordStrength } from './useFormValidation'
+import { resolveBrandName } from '../utils/brand'
 
 /**
  * 用户注册页共享逻辑（classic + vault 双模板共用）。
@@ -22,7 +23,7 @@ export function useRegister() {
 
   const brandSiteName = computed(() => {
     const siteName = String(appStore.config?.brand?.site_name || '').trim()
-    return siteName !== '' ? siteName : 'Dujiao-Next'
+    return resolveBrandName(siteName)
   })
 
   const email = ref('')

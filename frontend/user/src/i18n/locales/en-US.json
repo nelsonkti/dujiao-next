@@ -1,6 +1,6 @@
 {
   "common": {
-    "siteName": "Dujiao-Next",
+    "siteName": "JD1688",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -115,7 +115,7 @@
   },
   "home": {
     "hero": {
-      "title": "Dujiao-Next",
+      "title": "JD1688",
       "subtitle": "Professional Products and Services Provider",
       "cta": "Browse Products",
       "badge": "Next Gen Digital Store"
@@ -130,6 +130,8 @@
       "title": "Featured Products",
       "description": "Discover our premium collection of digital assets, curated for excellence.",
       "empty": "No products available",
+      "emptyDescription": "Products are being prepared. You can also browse every category in the product center.",
+      "errorDescription": "The product list could not be loaded. Please try again.",
       "viewAll": "View All Products"
     },
     "cta": {
@@ -263,8 +265,8 @@
   },
   "about": {
     "title": "About Us",
-    "subtitle": "Learn about Dujiao-Next",
-    "introduction": "Dujiao-Next is a professional online studio dedicated to providing high-quality products and services to our customers. Innovation, professionalism, and efficiency are our core values, and we constantly pursue excellence to create value for our customers.",
+    "subtitle": "Learn about JD1688",
+    "introduction": "JD1688 is a professional online studio dedicated to providing high-quality products and services to our customers. Innovation, professionalism, and efficiency are our core values, and we constantly pursue excellence to create value for our customers.",
     "ourServices": "Our Services",
     "service1": "Premium Product Recommendations & Sales",
     "service2": "Professional Pre-sales Consulting",

@@ -260,23 +260,35 @@
       </div>
     </section>
 
-    <section id="featured" class="relative z-10 pb-14" :class="showHeroSection ? 'pt-14' : 'pt-32 md:pt-36'">
+    <section id="featured" class="relative z-10 pb-14" :class="showHeroSection ? 'pt-14' : 'pt-16 md:pt-24'">
       <div class="container mx-auto px-4">
-        <div class="mb-8 flex items-end justify-between gap-4">
+        <div class="mb-6 flex items-end justify-between gap-4 md:mb-8">
           <div>
             <h2 class="theme-section-heading text-3xl md:text-4xl">{{ t('home.featured.title') }}</h2>
             <p class="mt-2 text-sm text-muted-foreground">{{ t('home.featured.description') }}</p>
           </div>
           <router-link
-                v-if="!hasHeroLink"
-                to="/products"
+            to="/products"
             class="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             {{ t('home.featured.viewAll') }}
           </router-link>
         </div>
 
-        <div v-if="products.length > 0" class="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div v-if="productsLoading" class="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" aria-busy="true">
+          <div v-for="index in 5" :key="index" class="h-[270px] rounded-2xl border bg-card theme-skeleton"></div>
+        </div>
+        <EmptyState
+          v-else-if="productsLoadError"
+          variant="soft"
+          size="sm"
+          icon="alert"
+          :title="t('emptyState.error')"
+          :description="t('home.featured.errorDescription')"
+          :action-label="t('emptyState.retry')"
+          @action="loadFeaturedProducts"
+        />
+        <div v-else-if="products.length > 0" class="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           <ProductCard
             v-for="(product, idx) in products"
             :key="product.id"
@@ -287,10 +299,16 @@
             @quick-buy="openQuickBuy"
           />
         </div>
-        <div v-else class="rounded-2xl border border-dashed py-16 text-center text-muted-foreground theme-slide-up">
-          <PackageOpen class="mx-auto h-16 w-16 mb-4 text-muted-foreground opacity-50" :stroke-width="1.5" />
-          {{ t('home.featured.empty') }}
-        </div>
+        <EmptyState
+          v-else
+          variant="soft"
+          size="sm"
+          icon="package"
+          :title="t('home.featured.empty')"
+          :description="t('home.featured.emptyDescription')"
+          :action-to="'/products'"
+          :action-label="t('emptyState.goProducts')"
+        />
       </div>
     </section>
 
@@ -351,7 +369,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowRight, ChevronLeft, ChevronRight, PackageOpen, Search, X } from 'lucide-vue-next'
+import { ArrowRight, ChevronLeft, ChevronRight, Search, X } from 'lucide-vue-next'
 import { postAPI, productAPI } from '../api'
 import { getImageUrl } from '../utils/image'
 import { useLocalized } from '../composables/useProduct'
@@ -385,6 +403,8 @@ const latestSectionVisible = computed(() => blogEnabled.value || noticeEnabled.v
 
 // ==================== Shared State ====================
 const products = ref<any[]>([])
+const productsLoading = ref(true)
+const productsLoadError = ref(false)
 const posts = ref<any[]>([])
 const quickBuyProduct = ref<any>(null)
 const quickBuyVisible = ref(false)
@@ -477,11 +497,16 @@ const goToPost = (slug: string) => {
 }
 
 const loadFeaturedProducts = async () => {
+  productsLoading.value = true
+  productsLoadError.value = false
   try {
     const response = await productAPI.list({ page: 1, page_size: 15 })
     products.value = response.data.data || []
   } catch (error) {
+    productsLoadError.value = true
     console.error('Failed to load products:', error)
+  } finally {
+    productsLoading.value = false
   }
 }
 

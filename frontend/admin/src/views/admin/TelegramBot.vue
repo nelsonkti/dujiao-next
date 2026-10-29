@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button'
 import { formatDate } from '@/utils/format'
 import { Bot, ExternalLink, Wifi, WifiOff, RefreshCw, Send, KeyRound, ShieldAlert } from 'lucide-vue-next'
 
-const LICENSE_PURCHASE_URL = 'https://dujiao-next.com/services/telegram-bot'
-
 const { t } = useI18n()
 
 const loading = ref(false)
@@ -105,12 +103,6 @@ onMounted(() => {
             </p>
           </div>
         </div>
-        <Button as-child size="sm" class="w-full bg-amber-600 hover:bg-amber-700 sm:w-auto">
-          <a :href="LICENSE_PURCHASE_URL" target="_blank" rel="noopener noreferrer">
-            {{ t('telegramBot.licensePurchase.action') }}
-            <ExternalLink class="ml-1.5 h-3.5 w-3.5" />
-          </a>
-        </Button>
       </CardContent>
     </Card>
 
