@@ -9,7 +9,6 @@ uploads
 .DS_Store
 node_modules/
 # Added by goreleaser init:
-dist/
 
 # 前端构建产物与依赖（frontend/{admin,user}）
 frontend/*/dist/
