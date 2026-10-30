@@ -580,6 +580,35 @@ func TestWalletRechargeCallbackSuccessAfterFailedCreditsOnce(t *testing.T) {
 	}
 }
 
+func TestManualConfirmWalletRechargeCreditsFailedRechargeOnce(t *testing.T) {
+	svc, db := setupPaymentServiceWalletTest(t)
+	payment, recharge := createWalletRechargeFixture(t, db, constants.PaymentStatusFailed, constants.WalletRechargeStatusFailed)
+
+	updated, err := svc.ManualConfirmWalletRecharge(ManualConfirmWalletRechargeInput{
+		PaymentID: payment.ID,
+		AdminID:   7,
+		Remark:    "核实渠道到账",
+	})
+	if err != nil {
+		t.Fatalf("manual confirm wallet recharge failed: %v", err)
+	}
+	if updated.Status != constants.PaymentStatusSuccess {
+		t.Fatalf("payment status want %s got %s", constants.PaymentStatusSuccess, updated.Status)
+	}
+	assertWalletRechargeSuccessState(t, db, payment.ID, recharge.ID, recharge.UserID, recharge.Amount.Decimal)
+
+	if _, err := svc.ManualConfirmWalletRecharge(ManualConfirmWalletRechargeInput{PaymentID: payment.ID, AdminID: 7}); err != nil {
+		t.Fatalf("repeated manual confirm wallet recharge failed: %v", err)
+	}
+	var txnCount int64
+	if err := db.Model(&walletdomain.Transaction{}).Where("reference = ?", fmt.Sprintf("recharge:%d:success", recharge.ID)).Count(&txnCount).Error; err != nil {
+		t.Fatalf("count wallet transaction failed: %v", err)
+	}
+	if txnCount != 1 {
+		t.Fatalf("wallet recharge success transaction count want 1 got %d", txnCount)
+	}
+}
+
 type failWalletRechargeReloadRepository struct {
 	walletcontract.Repository
 	getCalls int

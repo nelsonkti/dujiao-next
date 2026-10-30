@@ -860,7 +860,7 @@ const resolveDujiaopayChannelType = () =>
 
 watch(
   () => form.provider_type,
-  (value) => {
+  (value, previousValue) => {
     if (applyingChannelData.value) {
       return
     }
@@ -886,8 +886,8 @@ watch(
     } else if (value === 'dujiaopay') {
       if (dujiaopayConfig.order_mode === 'cashier') {
         form.channel_type = 'dujiaopay'
-      } else if (String(form.channel_type || '').trim() === '' || form.channel_type === 'dujiaopay') {
-        // token_id 由管理员手动输入，这里只在为空或残留 cashier 值时填一个默认值。
+      } else if (previousValue !== 'dujiaopay' || String(form.channel_type || '').trim() === '' || form.channel_type === 'dujiaopay') {
+        // 切换提供方时，旧提供方的 channel_type（如 alipay）不能复用于 token_id。
         form.channel_type = dujiaopayDefaultTokenID
       }
     } else if (value === 'tokenpay') {

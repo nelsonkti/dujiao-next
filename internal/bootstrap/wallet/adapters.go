@@ -75,6 +75,13 @@ func (a walletTransportAdapter) AdminAdjustBalance(input wallettransport.AdjustB
 	return account, txn, mapWalletTransportError(err)
 }
 
+func (a walletTransportAdapter) ConfirmWalletRecharge(input wallettransport.ConfirmWalletRechargeInput) (*paymentdomain.Payment, error) {
+	payment, err := a.payments.ManualConfirmWalletRecharge(paymentapp.ManualConfirmWalletRechargeInput{
+		PaymentID: input.PaymentID, AdminID: input.AdminID, ProviderRef: input.ProviderRef, Remark: input.Remark,
+	})
+	return payment, mapWalletTransportError(err)
+}
+
 func (a walletTransportAdapter) ListUserRechargeOrders(userID uint, page, pageSize int, status, rechargeNo string) ([]walletdomain.RechargeOrder, int64, error) {
 	orders, total, err := a.wallets.ListUserRechargeOrders(userID, page, pageSize, status, rechargeNo)
 	return orders, total, mapWalletTransportError(err)

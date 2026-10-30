@@ -15,11 +15,13 @@ import { paymentStatusClass, paymentStatusLabel } from '@/utils/status'
 import { formatDate, toRFC3339 } from '@/utils/format'
 import ComplianceGuardWrapper from '@/components/ComplianceGuardWrapper.vue'
 import { adminUrl } from '@/utils/adminBase'
+import { notifyError, notifySuccess } from '@/utils/notify'
 
 const { t } = useI18n()
 const loading = ref(true)
 const { refreshing, refreshList } = useListRefresh()
 const recharges = ref<AdminWalletRecharge[]>([])
+const confirmingPaymentId = ref<number | null>(null)
 const pagination = ref({
   page: 1,
   page_size: 20,
@@ -128,6 +130,23 @@ const channelTypeLabel = (value?: string) => {
   return map[value] || value
 }
 
+const canConfirm = (item: AdminWalletRecharge) => item.status !== 'success' && item.payment_status !== 'success'
+
+const confirmRecharge = async (item: AdminWalletRecharge) => {
+  if (!canConfirm(item) || !item.payment_id || confirmingPaymentId.value) return
+  if (!window.confirm(t('admin.walletRecharges.confirmPrompt'))) return
+  confirmingPaymentId.value = item.payment_id
+  try {
+    await adminAPI.confirmWalletRecharge({ payment_id: item.payment_id })
+    notifySuccess(t('admin.walletRecharges.confirmSuccess'))
+    await fetchRecharges(pagination.value.page, { preserveRows: true })
+  } catch (error: any) {
+    notifyError(error?.message || t('admin.walletRecharges.confirmFailed'))
+  } finally {
+    confirmingPaymentId.value = null
+  }
+}
+
 onMounted(() => {
   fetchRecharges()
 })
@@ -228,7 +247,7 @@ onMounted(() => {
     </div>
 
     <div class="rounded-xl border border-border bg-card overflow-x-auto">
-      <Table class="min-w-[960px]">
+      <Table class="min-w-[1040px]">
         <TableHeader class="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
           <TableRow>
             <TableHead class="px-6 py-3">{{ t('admin.walletRecharges.table.id') }}</TableHead>
@@ -240,16 +259,17 @@ onMounted(() => {
             <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.walletRecharges.table.amount') }}</TableHead>
             <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.walletRecharges.table.paidAt') }}</TableHead>
             <TableHead class="min-w-[140px] px-6 py-3">{{ t('admin.walletRecharges.table.createdAt') }}</TableHead>
+            <TableHead class="min-w-[120px] px-6 py-3">{{ t('admin.walletRecharges.table.actions') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody class="divide-y divide-border">
           <TableRow v-if="loading">
-            <TableCell :colspan="9" class="p-0">
-              <TableSkeleton :columns="9" :rows="5" />
+            <TableCell :colspan="10" class="p-0">
+              <TableSkeleton :columns="10" :rows="5" />
             </TableCell>
           </TableRow>
           <TableRow v-else-if="recharges.length === 0">
-            <TableCell colspan="9" class="px-6 py-8 text-center text-muted-foreground">{{ t('admin.walletRecharges.empty') }}</TableCell>
+            <TableCell colspan="10" class="px-6 py-8 text-center text-muted-foreground">{{ t('admin.walletRecharges.empty') }}</TableCell>
           </TableRow>
           <TableRow v-for="item in recharges" :key="item.id" class="hover:bg-muted/30">
             <TableCell class="px-6 py-4">
@@ -304,6 +324,18 @@ onMounted(() => {
             </TableCell>
             <TableCell class="min-w-[140px] px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.paid_at) || '-' }}</TableCell>
             <TableCell class="min-w-[140px] px-6 py-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
+            <TableCell class="min-w-[120px] px-6 py-4 text-xs">
+              <Button
+                v-if="canConfirm(item)"
+                size="xs"
+                variant="outline"
+                :disabled="confirmingPaymentId !== null"
+                @click="confirmRecharge(item)"
+              >
+                {{ confirmingPaymentId === item.payment_id ? t('admin.walletRecharges.confirming') : t('admin.walletRecharges.confirm') }}
+              </Button>
+              <span v-else class="text-muted-foreground">-</span>
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>

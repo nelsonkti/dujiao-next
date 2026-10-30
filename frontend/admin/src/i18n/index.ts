@@ -1176,6 +1176,11 @@ const messages = {
         channelId: '渠道ID',
         payableAmount: '实付金额',
         feeAmount: '手续费',
+        confirm: '确认到账并补单',
+        confirming: '处理中...',
+        confirmPrompt: '请确认该笔充值款项已实际到账。确认后会将余额入账，且不可撤销。',
+        confirmSuccess: '充值已确认到账，余额已入账',
+        confirmFailed: '充值补单失败',
         table: {
           id: 'ID',
           rechargeNo: '充值单号',
@@ -1186,6 +1191,7 @@ const messages = {
           amount: '金额',
           paidAt: '支付时间',
           createdAt: '创建时间',
+          actions: '操作',
         },
       },
       paymentChannels: {
@@ -5722,6 +5728,11 @@ const messages = {
         channelId: '渠道ID',
         payableAmount: '實付金額',
         feeAmount: '手續費',
+        confirm: '確認到帳並補單',
+        confirming: '處理中...',
+        confirmPrompt: '請確認該筆儲值款項已實際到帳。確認後會將餘額入帳，且不可撤銷。',
+        confirmSuccess: '儲值已確認到帳，餘額已入帳',
+        confirmFailed: '儲值補單失敗',
         table: {
           id: 'ID',
           rechargeNo: '儲值單號',
@@ -5732,6 +5743,7 @@ const messages = {
           amount: '金額',
           paidAt: '支付時間',
           createdAt: '建立時間',
+          actions: '操作',
         },
       },
       paymentChannels: {
@@ -10268,6 +10280,11 @@ const messages = {
         channelId: 'Channel ID',
         payableAmount: 'Payable Amount',
         feeAmount: 'Fee Amount',
+        confirm: 'Confirm and credit',
+        confirming: 'Processing...',
+        confirmPrompt: 'Confirm that this recharge has actually been received. The wallet will be credited and this cannot be undone.',
+        confirmSuccess: 'Recharge confirmed and wallet credited',
+        confirmFailed: 'Failed to confirm recharge',
         table: {
           id: 'ID',
           rechargeNo: 'Recharge No',
@@ -10278,6 +10295,7 @@ const messages = {
           amount: 'Amount',
           paidAt: 'Paid At',
           createdAt: 'Created At',
+          actions: 'Actions',
         },
       },
       paymentChannels: {

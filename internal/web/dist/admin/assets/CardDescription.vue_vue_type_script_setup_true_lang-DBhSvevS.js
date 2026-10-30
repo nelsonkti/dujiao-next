@@ -1,1 +1,0 @@
-import{c as o}from"./index-DKbxk6z3.js";import{D as r,S as t,a4 as n,u as c,I as p,J as l}from"./vendor-vue-Duqf-pEG.js";const i=r({__name:"CardDescription",props:{class:{}},setup(s){const e=s;return(a,m)=>(l(),t("p",{class:n(c(o)("text-sm text-muted-foreground",e.class))},[p(a.$slots,"default")],2))}});export{i as _};

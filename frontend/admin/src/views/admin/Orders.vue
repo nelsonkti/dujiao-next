@@ -152,6 +152,39 @@ const changePageSize = (size: number) => {
   fetchOrders(1)
 }
 
+const orderStatusTransitions: Record<string, string[]> = {
+  pending_payment: ['canceled'],
+  paid: ['fulfilling', 'partially_delivered', 'delivered', 'partially_refunded', 'refunded'],
+  fulfilling: ['partially_delivered', 'delivered', 'partially_refunded', 'refunded'],
+  partially_delivered: ['delivered', 'completed', 'partially_refunded', 'refunded'],
+  delivered: ['completed', 'partially_refunded', 'refunded'],
+  completed: ['partially_refunded', 'refunded'],
+  partially_refunded: ['refunded'],
+}
+
+const statusUpdateOptions = (order: AdminOrder) => {
+  const isParentOrder = order.parent_id == null && Array.isArray(order.children) && order.children.length > 0
+  let targets = orderStatusTransitions[order.status] || []
+
+  if (isParentOrder) {
+    targets = []
+    if (order.status === 'pending_payment') {
+      targets.push('canceled')
+    }
+    if (
+      order.status === 'delivered' &&
+      order.children?.every((child) => child.status === 'delivered' || child.status === 'completed')
+    ) {
+      targets.push('completed')
+    }
+    if (['paid', 'fulfilling', 'partially_delivered', 'delivered', 'completed'].includes(order.status)) {
+      targets.push('partially_refunded', 'refunded')
+    }
+  }
+
+  return Array.from(new Set([order.status, ...targets]))
+}
+
 const canUpdateStatus = (order: AdminOrder) => {
   if (!order) return false
   return order.status !== 'completed' && order.status !== 'canceled' && order.status !== 'partially_refunded' && order.status !== 'refunded'
@@ -427,15 +460,9 @@ watch(
                     <SelectValue :placeholder="t('admin.orders.filterStatusAll')" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending_payment">{{ t('order.status.pending_payment') }}</SelectItem>
-                    <SelectItem value="paid">{{ t('order.status.paid') }}</SelectItem>
-                    <SelectItem value="fulfilling">{{ t('order.status.fulfilling') }}</SelectItem>
-                    <SelectItem value="partially_delivered">{{ t('order.status.partially_delivered') }}</SelectItem>
-                    <SelectItem value="partially_refunded">{{ t('order.status.partially_refunded') }}</SelectItem>
-                    <SelectItem value="delivered">{{ t('order.status.delivered') }}</SelectItem>
-                    <SelectItem value="completed">{{ t('order.status.completed') }}</SelectItem>
-                    <SelectItem v-if="order.status === 'pending_payment'" value="canceled">{{ t('order.status.canceled') }}</SelectItem>
-                    <SelectItem value="refunded">{{ t('order.status.refunded') }}</SelectItem>
+                    <SelectItem v-for="status in statusUpdateOptions(order)" :key="status" :value="status">
+                      {{ statusLabel(status) }}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <Button v-if="canUpdateStatus(order)" size="xs" variant="outline" @click="updateStatus(order)">

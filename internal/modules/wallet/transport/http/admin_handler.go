@@ -29,6 +29,7 @@ type AdminWalletService interface {
 	ListAdminTransactions(userID uint, page, pageSize int, typ, direction string) ([]walletdomain.Transaction, int64, error)
 	ListRechargeOrdersAdmin(filter AdminRechargeListFilter) ([]walletdomain.RechargeOrder, int64, error)
 	AdminAdjustBalance(input AdjustBalanceInput) (*walletdomain.Account, *walletdomain.Transaction, error)
+	ConfirmWalletRecharge(input ConfirmWalletRechargeInput) (*paymentdomain.Payment, error)
 }
 
 // AdminUserReader 是后台钱包所需的用户读取端口。
@@ -80,6 +81,20 @@ type AdminAdjustUserWalletRequest struct {
 	Operation string `json:"operation"` // add/subtract
 	Currency  string `json:"currency"`
 	Remark    string `json:"remark"`
+}
+
+// ConfirmWalletRechargeInput 管理端人工确认钱包充值输入。
+type ConfirmWalletRechargeInput struct {
+	PaymentID   uint
+	AdminID     uint
+	ProviderRef string
+	Remark      string
+}
+
+type AdminConfirmWalletRechargeRequest struct {
+	PaymentID   uint   `json:"payment_id" binding:"required,gt=0"`
+	ProviderRef string `json:"provider_ref" binding:"max=255"`
+	Remark      string `json:"remark" binding:"max=500"`
 }
 
 type adminWalletRechargeUser struct {
@@ -308,6 +323,37 @@ func (h *AdminHandler) GetRecharges(c *gin.Context) {
 
 	pagination := response.BuildPagination(page, pageSize, total)
 	response.SuccessWithPage(c, items, pagination)
+}
+
+// ConfirmRecharge 管理员核实到账后人工确认钱包充值。
+func (h *AdminHandler) ConfirmRecharge(c *gin.Context) {
+	adminID, ok := ginutil.GetAdminID(c)
+	if !ok {
+		return
+	}
+	var req AdminConfirmWalletRechargeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ginutil.RespondBindError(c, err)
+		return
+	}
+	payment, err := h.wallets.ConfirmWalletRecharge(ConfirmWalletRechargeInput{
+		PaymentID:   req.PaymentID,
+		AdminID:     adminID,
+		ProviderRef: req.ProviderRef,
+		Remark:      req.Remark,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrPaymentInvalid), errors.Is(err, ErrPaymentStatusInvalid), errors.Is(err, ErrPaymentAmountMismatch), errors.Is(err, ErrPaymentCurrencyMismatch):
+			ginutil.RespondError(c, response.CodeBadRequest, "error.payment_invalid", err)
+		case errors.Is(err, ErrPaymentNotFound), errors.Is(err, ErrRechargeNotFound):
+			ginutil.RespondError(c, response.CodeNotFound, "error.payment_not_found", err)
+		default:
+			ginutil.RespondError(c, response.CodeInternal, "error.payment_callback_failed", err)
+		}
+		return
+	}
+	response.Success(c, payment)
 }
 
 // AdjustUserWallet 管理端增减用户余额

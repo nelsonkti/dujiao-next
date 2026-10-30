@@ -9,6 +9,7 @@ import (
 
 	orderapp "github.com/dujiao-next/internal/modules/order/application"
 	paymentcontract "github.com/dujiao-next/internal/modules/payment/contract"
+	walletcontract "github.com/dujiao-next/internal/modules/wallet/contract"
 
 	paymentdomain "github.com/dujiao-next/internal/modules/payment/domain"
 
@@ -148,6 +149,61 @@ type ManualConfirmPaymentInput struct {
 	AdminID     uint
 	ProviderRef string // 第三方支付流水号 / 链上交易 Hash（可选）
 	Remark      string
+}
+
+// ManualConfirmWalletRechargeInput 后台人工确认钱包充值输入。
+type ManualConfirmWalletRechargeInput struct {
+	PaymentID   uint
+	AdminID     uint
+	ProviderRef string
+	Remark      string
+}
+
+// ManualConfirmWalletRecharge 管理员核实到账后人工确认钱包充值，并通过支付回调事务入账。
+func (s *PaymentService) ManualConfirmWalletRecharge(input ManualConfirmWalletRechargeInput) (*paymentdomain.Payment, error) {
+	if input.PaymentID == 0 || input.AdminID == 0 {
+		return nil, ErrPaymentInvalid
+	}
+	if s.walletRepo == nil {
+		return nil, ErrPaymentUpdateFailed
+	}
+	payment, err := s.paymentRepo.GetByID(input.PaymentID)
+	if err != nil {
+		return nil, ErrPaymentUpdateFailed
+	}
+	if payment == nil {
+		return nil, ErrPaymentNotFound
+	}
+	if payment.OrderID != 0 {
+		return nil, ErrPaymentInvalid
+	}
+	recharge, err := s.walletRepo.GetRechargeOrderByPaymentID(payment.ID)
+	if err != nil {
+		return nil, ErrPaymentUpdateFailed
+	}
+	if recharge == nil {
+		return nil, walletcontract.ErrRechargeNotFound
+	}
+
+	return s.HandleCallback(PaymentCallbackInput{
+		PaymentID:   payment.ID,
+		OrderNo:     recharge.RechargeNo,
+		ChannelID:   payment.ChannelID,
+		Status:      constants.PaymentStatusSuccess,
+		ProviderRef: strings.TrimSpace(input.ProviderRef),
+		Amount:      payment.Amount,
+		Currency:    payment.Currency,
+		Payload: jsonmap.JSON{
+			"manual_confirm": jsonmap.JSON{
+				"admin_id":                 input.AdminID,
+				"remark":                   strings.TrimSpace(input.Remark),
+				"provider_ref":             strings.TrimSpace(input.ProviderRef),
+				"previous_status":          payment.Status,
+				"previous_recharge_status": recharge.Status,
+				"confirmed_at":             time.Now().Format(time.RFC3339),
+			},
+		},
+	})
 }
 
 // ManualConfirmPayment 管理员在支付渠道侧核实到账后，手动把订单恢复为已支付并继续履约。
