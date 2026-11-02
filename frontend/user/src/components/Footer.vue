@@ -45,6 +45,12 @@
                 {{ t(item.label) }}
               </router-link>
             </li>
+            <li>
+              <a :href="cdkRedeemUrl" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 group">
+                <Gift class="w-4 h-4 shrink-0 opacity-50 group-hover:opacity-80 transition-opacity" />
+                {{ t('nav.cdkRedeem') }}
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -115,8 +121,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Home, LayoutGrid, Newspaper, Info, Mail, Headphones } from 'lucide-vue-next'
+import { Home, LayoutGrid, Gift, Mail, Headphones } from 'lucide-vue-next'
 import { useAppStore } from '../stores/app'
+import { CDK_REDEEM_URL } from '../composables/useNavConfig'
 import { getImageUrl } from '../utils/image'
 import { getLocalizedText } from '../utils/resellerSiteConfig'
 import { DEFAULT_BRAND_LOGO, resolveBrandName } from '../utils/brand'
@@ -150,7 +157,6 @@ const brandLogo = computed(() => {
 })
 
 const isListMode = computed(() => config.value?.template_mode === 'list')
-const navConfig = computed(() => config.value?.nav_config as { builtin?: Record<string, boolean> } | undefined)
 
 const quickLinks = computed(() => {
   const items = [
@@ -159,15 +165,10 @@ const quickLinks = computed(() => {
   if (!isListMode.value) {
     items.push({ path: '/products', label: 'nav.products', icon: LayoutGrid })
   }
-  const builtin = navConfig.value?.builtin
-  if (!builtin || builtin.blog !== false) {
-    items.push({ path: '/blog', label: 'nav.blog', icon: Newspaper })
-  }
-  if (!builtin || builtin.about !== false) {
-    items.push({ path: '/about', label: 'nav.about', icon: Info })
-  }
   return items
 })
+
+const cdkRedeemUrl = CDK_REDEEM_URL
 
 const footerLinks = computed(() => {
   const links = config.value?.footer_links

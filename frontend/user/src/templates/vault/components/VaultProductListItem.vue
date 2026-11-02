@@ -1,7 +1,7 @@
 <template>
   <RouterLink
     :to="`/products/${product.slug}`"
-    class="group flex items-center gap-3 rounded-lg border bg-card p-2.5 transition hover:border-hairline-strong hover:shadow-[var(--shadow-sm)] sm:gap-3.5 sm:p-3"
+    class="group flex items-start gap-3 rounded-lg border bg-card p-2.5 transition hover:border-hairline-strong hover:shadow-[var(--shadow-sm)] sm:gap-3.5 sm:p-3"
     :class="{ 'opacity-[0.74]': soldOut }"
   >
     <!-- Thumbnail -->
@@ -19,7 +19,7 @@
       <div class="flex min-w-0 items-center gap-1.5">
         <span v-if="categoryName" class="hidden max-w-[88px] flex-none truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground sm:inline">{{ categoryName }}</span>
         <span v-if="categoryName" class="hidden flex-none text-muted-foreground/40 sm:inline">·</span>
-        <h3 class="truncate text-sm font-bold text-foreground">{{ title }}</h3>
+        <h3 class="break-words text-[15px] font-bold leading-6 text-foreground">{{ title }}</h3>
       </div>
       <div class="flex flex-wrap items-center gap-1.5">
         <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" :class="stockPill.tone">

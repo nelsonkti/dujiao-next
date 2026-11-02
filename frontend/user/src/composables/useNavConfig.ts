@@ -1,7 +1,7 @@
 import { computed, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-    Home, LayoutGrid, Newspaper, Bell, Info,
+    Home, LayoutGrid,
     Link2, FileText, Globe, Star, Heart, MessageCircle, Gift, Zap, Shield,
     BookOpen, Code, Phone, MapPin, Music, Camera,
 } from 'lucide-vue-next'
@@ -45,10 +45,10 @@ interface NavConfigRaw {
     custom_items?: CustomNavItemRaw[]
 }
 
-const builtinNavDefs: Record<string, { path: string; label: string; icon: Component }> = {
-    blog: { path: '/blog', label: 'nav.blog', icon: Newspaper },
-    notice: { path: '/notice', label: 'nav.notice', icon: Bell },
-    about: { path: '/about', label: 'nav.about', icon: Info },
+export const CDK_REDEEM_URL = 'https://auto.jd1688.win'
+
+const builtinNavDefs: Record<string, { path: string; label: string; icon: Component; type: NavItem['type']; target: string }> = {
+    cdkRedeem: { path: CDK_REDEEM_URL, label: 'nav.cdkRedeem', icon: Gift, type: 'link', target: '_blank' },
 }
 
 /** 后台自定义导航项可选的图标，key 与 SettingsNavigationTab.vue 的 presetIcons 一一对应 */
@@ -87,13 +87,13 @@ export const useNavConfig = () => {
     const noticeEnabled = computed(() => navConfig.value?.builtin?.notice !== false)
     const aboutEnabled = computed(() => navConfig.value?.builtin?.about !== false)
 
-    /** 内置导航项（博客 / 公告 / 关于），受后台开关控制 */
+    /** 内置导航项，受后台开关控制 */
     const builtinNavItems = computed<NavItem[]>(() => {
         const builtin = navConfig.value?.builtin
         const result: NavItem[] = []
         for (const [key, def] of Object.entries(builtinNavDefs)) {
             if (builtin && builtin[key] === false) continue
-            result.push({ key, path: def.path, label: t(def.label), icon: def.icon, type: 'route', target: '_self' })
+            result.push({ key, path: def.path, label: t(def.label), icon: def.icon, type: def.type, target: def.target })
         }
         return result
     })
@@ -123,7 +123,7 @@ export const useNavConfig = () => {
             .filter((item) => item.label && item.path)
     })
 
-    /** 首页 + 商品 + 内置 + 自定义，供顶栏主导航使用 */
+    /** 首页 + 商品 + 兑换站 + 自定义，供顶栏主导航使用 */
     const primaryNavItems = computed<NavItem[]>(() => {
         const items: NavItem[] = [
             { key: 'home', path: '/', label: t('nav.home'), icon: Home, type: 'route', target: '_self' },

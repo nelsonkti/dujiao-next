@@ -9,7 +9,7 @@
       <div class="flex gap-1.5 overflow-x-auto pb-0.5 lg:grid lg:gap-1 lg:overflow-visible lg:pb-0">
         <button
           type="button"
-          class="flex-none whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-semibold transition-colors lg:w-full lg:rounded-lg lg:px-3 lg:py-2.5 lg:text-left"
+          class="flex-none whitespace-nowrap rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors lg:w-full lg:rounded-lg lg:px-3 lg:py-2.5 lg:text-left"
           :class="selectedCategory === null
             ? 'bg-primary text-white lg:bg-primary/10 lg:text-primary'
             : 'bg-secondary text-muted-foreground hover:text-foreground lg:bg-transparent lg:hover:bg-secondary'"
@@ -21,7 +21,7 @@
           <div class="flex flex-none items-center gap-0.5 lg:w-full lg:min-w-0">
             <button
               type="button"
-              class="flex min-w-0 max-w-[65vw] flex-none items-center gap-2.5 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors lg:w-full lg:max-w-none lg:flex-1 lg:rounded-lg lg:px-3 lg:py-2.5 lg:text-left"
+              class="flex min-w-0 max-w-[65vw] flex-none items-center gap-2.5 rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors lg:w-full lg:max-w-none lg:flex-1 lg:rounded-lg lg:px-3 lg:py-2.5 lg:text-left"
               :class="selectedCategory === grp.id
                 ? 'bg-primary text-white lg:bg-primary/10 lg:text-primary'
                 : 'bg-secondary text-muted-foreground hover:text-foreground lg:bg-transparent lg:hover:bg-secondary'"
