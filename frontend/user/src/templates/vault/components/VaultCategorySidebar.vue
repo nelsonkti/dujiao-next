@@ -1,18 +1,18 @@
 <template>
   <aside class="min-w-0 lg:sticky lg:top-[88px]">
-    <div class="rounded-xl border bg-card p-2.5 sm:p-4">
+    <div class="rounded-xl border p-2.5 sm:p-4" :class="variant === 'glass' ? 'border-white/15 bg-white/[0.08] shadow-2xl backdrop-blur-xl' : 'bg-card'">
       <div class="mb-3 hidden items-center gap-2 px-1 lg:flex">
-        <span class="h-4 w-1 flex-none rounded-full bg-primary"></span>
-        <h4 class="text-sm font-bold">{{ t('products.categories') }}</h4>
+        <span class="h-4 w-1 flex-none rounded-full" :class="variant === 'glass' ? 'bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.7)]' : 'bg-primary'"></span>
+        <h4 class="text-sm font-bold" :class="variant === 'glass' ? 'text-white' : 'text-foreground'">{{ t('products.categories') }}</h4>
       </div>
       <!-- 移动端横向 chips / 桌面竖向列表 -->
       <div class="flex gap-1.5 overflow-x-auto pb-0.5 lg:grid lg:gap-1 lg:overflow-visible lg:pb-0">
         <button
           type="button"
           class="flex-none whitespace-nowrap rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors lg:w-full lg:rounded-lg lg:px-3 lg:py-2.5 lg:text-left"
-          :class="selectedCategory === null
-            ? 'bg-primary text-white lg:bg-primary/10 lg:text-primary'
-            : 'bg-secondary text-muted-foreground hover:text-foreground lg:bg-transparent lg:hover:bg-secondary'"
+          :class="variant === 'glass'
+            ? (selectedCategory === null ? 'bg-sky-400 text-slate-950' : 'bg-white/[0.06] text-white/65 hover:bg-white/10 hover:text-white')
+            : (selectedCategory === null ? 'bg-primary text-white lg:bg-primary/10 lg:text-primary' : 'bg-secondary text-muted-foreground hover:text-foreground lg:bg-transparent lg:hover:bg-secondary')"
           @click="$emit('select', null)"
         >
           {{ t('products.allCategories') }}
@@ -22,9 +22,9 @@
             <button
               type="button"
               class="flex min-w-0 max-w-[65vw] flex-none items-center gap-2.5 rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors lg:w-full lg:max-w-none lg:flex-1 lg:rounded-lg lg:px-3 lg:py-2.5 lg:text-left"
-              :class="selectedCategory === grp.id
-                ? 'bg-primary text-white lg:bg-primary/10 lg:text-primary'
-                : 'bg-secondary text-muted-foreground hover:text-foreground lg:bg-transparent lg:hover:bg-secondary'"
+              :class="variant === 'glass'
+                ? (selectedCategory === grp.id ? 'bg-sky-400 text-slate-950' : 'bg-white/[0.06] text-white/65 hover:bg-white/10 hover:text-white')
+                : (selectedCategory === grp.id ? 'bg-primary text-white lg:bg-primary/10 lg:text-primary' : 'bg-secondary text-muted-foreground hover:text-foreground lg:bg-transparent lg:hover:bg-secondary')"
               @click="$emit('select', grp.id)"
             >
               <img v-if="grp.icon" :src="getImageUrl(grp.icon)" :alt="catName(grp)" loading="lazy" class="h-5 w-5 flex-none rounded-md object-cover" />
@@ -34,7 +34,7 @@
               v-if="grp.children.length"
               type="button"
               class="hidden h-9 w-9 flex-none place-items-center rounded-lg transition-colors hover:bg-secondary hover:text-foreground lg:grid"
-              :class="expandedParentIds.includes(grp.id) ? 'text-primary' : 'text-muted-foreground'"
+              :class="expandedParentIds.includes(grp.id) ? (variant === 'glass' ? 'text-sky-300' : 'text-primary') : (variant === 'glass' ? 'text-white/50' : 'text-muted-foreground')"
               :aria-expanded="expandedParentIds.includes(grp.id)"
               :aria-label="catName(grp)"
               @click="$emit('toggle', grp.id)"
@@ -48,7 +48,9 @@
               :key="child.id"
               type="button"
               class="hidden w-full min-w-0 truncate rounded-lg py-2 pl-9 pr-3 text-left text-[13.5px] font-semibold transition-colors lg:block"
-              :class="selectedCategory === child.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'"
+              :class="variant === 'glass'
+                ? (selectedCategory === child.id ? 'bg-sky-400/15 text-sky-300' : 'text-white/55 hover:bg-white/10 hover:text-white')
+                : (selectedCategory === child.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')"
               @click="$emit('select', child.id)"
             >
               {{ catName(child) }}
@@ -67,11 +69,12 @@ import { getImageUrl } from '../../../utils/image'
 import { useLocalized } from '../../../composables/useProduct'
 import type { PublicCategory } from '../../../utils/category'
 
-defineProps<{
+withDefaults(defineProps<{
   categoryGroups: (PublicCategory & { children: PublicCategory[] })[]
   selectedCategory: number | null
   expandedParentIds: number[]
-}>()
+  variant?: 'default' | 'glass'
+}>(), { variant: 'default' })
 
 defineEmits<{ select: [id: number | null]; toggle: [id: number] }>()
 
